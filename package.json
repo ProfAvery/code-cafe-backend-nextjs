@@ -3,21 +3,30 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "npm-run-all --parallel dev:next dev:ws",
+    "dev:next": "next dev --turbopack --port 3030",
+    "dev:ws": "nodemon --ext mjs websocket-server.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "lowdb": "^7.0.1",
+    "next": "15.3.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.3.4"
+    "ws": "^8.18.3"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
-    "@eslint/eslintrc": "^3"
+    "foreman": "^3.0.1",
+    "nodemon": "^3.1.10",
+    "npm-run-all": "^4.1.5",
+    "tailwindcss": "^4"
   }
 }

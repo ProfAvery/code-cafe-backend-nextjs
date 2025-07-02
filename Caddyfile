@@ -1,0 +1,16 @@
+# https://caddyserver.com/download
+
+http://localhost:5000 {
+	@api path /api/*
+	reverse_proxy @api http://localhost:3030
+
+	@ws path /ws-cafe
+	reverse_proxy @ws http://localhost:8080 {
+		transport http {
+			versions h1
+		}
+	}
+
+	@fallback not path /api/* /ws-cafe
+	reverse_proxy @fallback http://localhost:3000
+}
