@@ -46,3 +46,6 @@ db.json
 
 # caddy
 caddy.exe
+
+# curl
+cookies.txt

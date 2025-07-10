@@ -1,6 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import * as orderData from '@/data/orders';
+import { authMiddleware } from '@/middleware/auth';
 
 const sendOrders = async () => {
   try {
@@ -26,8 +27,7 @@ export async function GET(request, props) {
   }
 }
 
-// TODO: Use JWT to verify that user is an associate
-export async function PUT(request, props) {
+async function putHandler(request, props) {
   const params = await props.params;
   const id = Number(params.id);
 
@@ -35,7 +35,7 @@ export async function PUT(request, props) {
     return new Response(null, { status: 404 });
   } else {
     const editedOrder = await request.json();
-    const result = orderData.editOrder(id, editedOrder);
+    const result = await orderData.editOrder(id, editedOrder);
     if (!result.success) {
       return NextResponse.json(result, { status: 400 });
     }
@@ -44,8 +44,7 @@ export async function PUT(request, props) {
   }
 }
 
-// TODO: Use JWT to verify that user is an associate
-export async function DELETE(request, props) {
+async function deleteHandler(request, props) {
   const params = await props.params;
   const id = Number(params.id);
   const orders = orderData.getOrders();
@@ -58,3 +57,6 @@ export async function DELETE(request, props) {
     return NextResponse.json({ message: `Successfully deleted coffee order ${id}` });
   }
 }
+
+export const PUT = authMiddleware(putHandler);
+export const DELETE = authMiddleware(deleteHandler);

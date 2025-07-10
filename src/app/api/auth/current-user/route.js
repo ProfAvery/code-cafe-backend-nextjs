@@ -1,18 +1,18 @@
 
 import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
 import { NextResponse } from 'next/server';
 
-const cookieName = process.env.COOKIE_NAME || 'coffeeJWT';
-const secret = process.env.JWT_SECRET || 'bnr-secret-sauce';
+const cookieName = process.env.COOKIE_NAME;
+const secret = new TextEncoder().encode(process.env.SECRET);
 
 export async function GET() {
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
   const cookie = cookieStore.get(cookieName);
 
   if (cookie) {
     try {
-      const user = jwt.verify(cookie.value, secret, { algorithm: 'HS256' });
+      const { payload: user } = await jwtVerify(cookie.value, secret, { algorithms: ['HS256'] });
       return NextResponse.json(user);
     } catch (error) {
       return NextResponse.json({});
