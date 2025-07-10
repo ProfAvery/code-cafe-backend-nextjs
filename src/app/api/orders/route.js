@@ -21,7 +21,6 @@ export async function GET() {
 export async function POST(request) {
   const order = await request.json();
   const result = await orderData.createOrder(order);
-  console.log('Order creation result:', result);
   if (!result.success) {
     return NextResponse.json(result, { status: 400 });
   }
@@ -31,7 +30,6 @@ export async function POST(request) {
 
 export async function DELETE() {
   orderData.deleteOrders();
-  console.log('deleted all orders');
   await sendOrders();
   return NextResponse.json({ message: 'deleted all orders' });
 }
