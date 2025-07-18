@@ -1,19 +1,7 @@
-
 import { NextResponse } from 'next/server';
 import * as orderData from '@/data/orders';
 import { authMiddleware } from '@/middleware/auth';
-
-const sendOrders = async () => {
-  try {
-    await fetch('http://localhost:8080/broadcast', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderData.getOrders()),
-    });
-  } catch (error) {
-    console.error('Failed to broadcast order update:', error);
-  }
-};
+import sendOrders from '@/utils/broadcast';
 
 export async function GET(request, props) {
   const params = await props.params;
