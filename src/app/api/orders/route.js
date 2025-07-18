@@ -3,7 +3,7 @@ import * as orderData from '@/data/orders';
 import sendOrders from '@/utils/broadcast';
 
 export async function GET() {
-  return NextResponse.json(orderData.getOrders());
+  return NextResponse.json(await orderData.getOrders());
 }
 
 export async function POST(request) {

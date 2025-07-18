@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import * as orderData from '@/data/orders';
 import { authMiddleware } from '@/middleware/auth';
@@ -5,9 +6,9 @@ import sendOrders from '@/utils/broadcast';
 
 export async function GET(request, props) {
   const params = await props.params;
-  const id = Number(params.id);
+  const id = params.id;
 
-  const order = orderData.getOrders().find(({ id: targetId }) => targetId === id);
+  const order = await orderData.getOrder(id);
   if (order) {
     return NextResponse.json(order);
   } else {
@@ -17,9 +18,10 @@ export async function GET(request, props) {
 
 async function putHandler(request, props) {
   const params = await props.params;
-  const id = Number(params.id);
+  const id = params.id;
 
-  if (!orderData.getOrders().some(({ id: targetId }) => targetId === id)) {
+  const order = await orderData.getOrder(id);
+  if (!order) {
     return new Response(null, { status: 404 });
   } else {
     const editedOrder = await request.json();
@@ -34,13 +36,11 @@ async function putHandler(request, props) {
 
 async function deleteHandler(request, props) {
   const params = await props.params;
-  const id = Number(params.id);
-  const orders = orderData.getOrders();
+  const id = params.id;
 
-  if (!orders.some(({ id: targetId }) => targetId === id)) {
+  if (!await orderData.deleteOrder(id)) {
     return new Response(null, { status: 404 });
   } else {
-    orderData.deleteOrder(id);
     await sendOrders();
     return NextResponse.json({ message: `Successfully deleted coffee order ${id}` });
   }

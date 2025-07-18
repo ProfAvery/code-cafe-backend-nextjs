@@ -1,5 +1,22 @@
-import { JSONFilePreset } from 'lowdb/node'
-const db = await JSONFilePreset('db.json', { orders: [] });
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import { MongoClient, ObjectId } from 'mongodb';
+
+let mongod = null;
+let client = null;
+
+const getCollection = async () => {
+  if (!mongod) {
+    mongod = await MongoMemoryServer.create();
+  }
+
+  const uri = mongod.getUri();
+  if (!client) {
+    client = new MongoClient(uri);
+  }
+
+  const db = client.db('code-cafe');
+  return db.collection('orders');
+}
 
 const validateOrder = (order) => {
   if (!order) {
@@ -27,56 +44,68 @@ const createOrder = async (order) => {
   }
 
   const newOrder = {
-    id: db.data.orders.length + 1,
     name: order.name,
     phone: order.phone,
     zipCode: order.zipCode,
     items: order.items,
   };
-  await db.update(({ orders }) => {
-    orders.push(newOrder);
-  });
+
+  const orders = await getCollection();
+  await orders.insertOne(newOrder);
+
   return { success: true };
 };
 
 const deleteOrders = async () => {
-  await db.update(({ orders }) => {
-    db.data.orders = [];
-  });
+  const orders = await getCollection();
+  await orders.deleteMany({});
 };
 
 const deleteOrder = async (id) => {
-  await db.update(({ orders }) => {
-    db.data.orders = orders.filter((order) => order.id !== id);
-  });
+  const _id = ObjectId.createFromHexString(id);
+  
+  const orders = await getCollection();
+  const result = await orders.deleteOne({ _id });
+
+  return (result.deletedCount === 1);
 };
 
 const editOrder = async (id, editedOrder) => {
+  const _id = ObjectId.createFromHexString(id);
   const result = validateOrder(editedOrder);
   if (!result.valid) {
     return { success: false, ...result };
   }
 
-  await db.update(({ orders }) => {
-    db.data.orders = orders.map((order) => (order.id === id ? {
-      ...order,
-      items: editedOrder.items,
-      name: editedOrder.name,
-      phone: editedOrder.phone,
-      zipCode: editedOrder.zipCode,
-    } : order));
-  });
+  const orders = await getCollection();
+  await orders.updateOne({ _id }, { $set: editedOrder });
 
-  return { success: true, order: db.data.orders.find((order) => order.id === id) };
+  return {
+    success: true,
+    order: await orders.findOne({ _id }),
+  };
 };
 
-const getOrders = () => db.data.orders;
+const getOrder = async (id) => {
+  const _id = ObjectId.createFromHexString(id);
+
+  const orders = await getCollection();
+  const order = await orders.findOne({ _id });
+
+  return order;
+};
+
+const getOrders = async () => {
+  const orders = await getCollection();
+  return await orders.find().toArray();
+};
 
 export {
   createOrder,
   deleteOrders,
   deleteOrder,
   editOrder,
+  getOrder,
   getOrders,
   validateOrder,
 };
