@@ -7,7 +7,7 @@ const cookieName = process.env.COOKIE_NAME;
 const secret = new TextEncoder().encode(process.env.SECRET);
 
 export async function GET() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const cookie = cookieStore.get(cookieName);
 
   if (cookie) {
